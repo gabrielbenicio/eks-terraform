@@ -1,12 +1,31 @@
-module "vpc" {
-  source = "terraform-aws-modules/vpc/aws"
+resource "aws_vpc" "main" {
+  cidr_block = var.vpc_cidr
+  tags = {
+    Name = "eks-vpc"
+  }
+}
 
-  name = var.vpc_name
-  cidr = var.vpc_cidr
-  azs  = var.vpc_azs
+resource "aws_subnet" "private" {
+  count = length(var.private_subnets)
+  vpc_id = aws_vpc.main.id
+  cidr_block = var.private_subnets[count.index]
+  availability_zone = element(var.availability_zones, count.index)
+  tags = {
+    Name = "eks-private-subnet-${count.index + 1}"
+  }
+}
 
-  public_subnets  = var.public_subnets
-  private_subnets = var.private_subnets
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.main.id
+  tags = {
+    Name = "eks-igw"
+  }
+}
 
-  enable_nat_gateway = true
+resource "aws_route_table" "private" {
+  count  = length(var.private_subnets)
+  vpc_id = aws_vpc.main.id
+  tags = {
+    Name = "eks-private-route-table-${count.index + 1}"
+  }
 }
