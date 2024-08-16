@@ -1,0 +1,29 @@
+pipeline {
+  agent any
+
+  stages {
+    stage('Build') {
+      steps {
+        script {
+          docker.build("my-app:latest")
+        }
+      }
+    }
+    stage('Push') {
+      steps {
+        script {
+          docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
+            docker.image("my-app:latest").push()
+          }
+        }
+      }
+    }
+    stage('Deploy') {
+      steps {
+        script {
+          sh 'helm upgrade --install my-app ./helm/my-app'
+        }
+      }
+    }
+  }
+}
