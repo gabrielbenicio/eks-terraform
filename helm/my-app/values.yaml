@@ -1,0 +1,18 @@
+replicaCount: 2
+
+image:
+  repository: my-app
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP  # Can be ClusterIP, NodePort, or LoadBalancer
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  host: my-app.example.com
+  annotations: {}
+  tls:
+    - secretName: my-app-tls
